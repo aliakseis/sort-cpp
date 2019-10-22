@@ -73,7 +73,7 @@ int main()
 {
 	vector<string> sequences = { "PETS09-S2L1", "TUD-Campus", "TUD-Stadtmitte", "ETH-Bahnhof", "ETH-Sunnyday", "ETH-Pedcross2", "KITTI-13", "KITTI-17", "ADL-Rundle-6", "ADL-Rundle-8", "Venice-2" };
 	for (auto seq : sequences)
-		TestSORT(seq, false);
+		TestSORT(seq, true);
 	//TestSORT("PETS09-S2L1", true);
 
 	// Note: time counted here is of tracking procedure, while the running speed bottleneck is opening and parsing detectionFile.
@@ -94,7 +94,7 @@ void TestSORT(string seqName, bool display)
 	for (int i = 0; i < CNUM; i++)
 		rng.fill(randColor[i], RNG::UNIFORM, 0, 256);
 
-	string imgPath = "D:/Data/Track/2DMOT2015/train/" + seqName + "/img1/";
+	string imgPath = "/Data/Track/2DMOT2015/train/" + seqName + "/img1/";
 
 	if (display)
 		if (_access(imgPath.c_str(), 0) == -1)
