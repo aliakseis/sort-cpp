@@ -39,12 +39,12 @@ using namespace cv;
 
 
 
-typedef struct TrackingBox
+struct TrackingBox
 {
     int frame{};
     int id;
     Rect_<float> box;
-}TrackingBox;
+};
 
 
 // Computes IOU between two bounding boxes
@@ -62,29 +62,9 @@ double GetIOU(Rect_<float> bb_test, Rect_<float> bb_gt)
 
 
 // global variables for counting
-#define CNUM 20
+enum { CNUM = 20 };
 int total_frames = 0;
 double total_time = 0.0;
-
-void TestSORT(string seqName, bool display);
-
-
-
-int main()
-{
-    vector<string> sequences = { "PETS09-S2L1", "TUD-Campus", "TUD-Stadtmitte", "ETH-Bahnhof", "ETH-Sunnyday", "ETH-Pedcross2", "KITTI-13", "KITTI-17", "ADL-Rundle-6", "ADL-Rundle-8", "Venice-2" };
-    for (auto seq : sequences) {
-        TestSORT(seq, true);
-    }
-    //TestSORT("PETS09-S2L1", true);
-
-    // Note: time counted here is of tracking procedure, while the running speed bottleneck is opening and parsing detectionFile.
-    cout << "Total Tracking took: " << total_time << " for " << total_frames << " frames or " << (static_cast<double>(total_frames) / total_time) << " FPS" << endl;
-
-    return 0;
-}
-
-
 
 void TestSORT(string seqName, bool display)
 {
@@ -119,19 +99,20 @@ void TestSORT(string seqName, bool display)
     }
 
     string detLine;
-    istringstream ss;
     vector<TrackingBox> detData;
-    char ch;
-    float tpx;
-    float tpy;
-    float tpw;
-    float tph;
 
     while (getline(detectionFile, detLine))
     {
         TrackingBox tb;
 
-        ss.str(detLine);
+        istringstream ss(detLine);
+
+        char ch;
+        float tpx;
+        float tpy;
+        float tpw;
+        float tph;
+
         ss >> tb.frame >> ch >> tb.id >> ch;
         ss >> tpx >> ch >> tpy >> ch >> tpw >> ch >> tph;
         ss.str("");
@@ -298,9 +279,6 @@ void TestSORT(string seqName, bool display)
                 }
             }
         }
-        else {
-            ;
-        }
 
         // filter out matched with low IOU
         matchedPairs.clear();
@@ -393,4 +371,20 @@ void TestSORT(string seqName, bool display)
     if (display) {
         destroyAllWindows();
     }
+}
+
+
+
+int main()
+{
+    vector<string> sequences = { "PETS09-S2L1", "TUD-Campus", "TUD-Stadtmitte", "ETH-Bahnhof", "ETH-Sunnyday", "ETH-Pedcross2", "KITTI-13", "KITTI-17", "ADL-Rundle-6", "ADL-Rundle-8", "Venice-2" };
+    for (auto seq : sequences) {
+        TestSORT(seq, true);
+    }
+    //TestSORT("PETS09-S2L1", true);
+
+    // Note: time counted here is of tracking procedure, while the running speed bottleneck is opening and parsing detectionFile.
+    cout << "Total Tracking took: " << total_time << " for " << total_frames << " frames or " << (static_cast<double>(total_frames) / total_time) << " FPS" << endl;
+
+    return 0;
 }
