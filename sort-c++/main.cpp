@@ -53,10 +53,11 @@ double GetIOU(Rect_<float> bb_test, Rect_<float> bb_gt)
 	float in = (bb_test & bb_gt).area();
 	float un = bb_test.area() + bb_gt.area() - in;
 
-	if (un < DBL_EPSILON)
+	if (un < DBL_EPSILON) {
 		return 0;
+}
 
-	return (double)(in / un);
+	return static_cast<double>(in / un);
 }
 
 
@@ -72,12 +73,13 @@ void TestSORT(string seqName, bool display);
 int main()
 {
 	vector<string> sequences = { "PETS09-S2L1", "TUD-Campus", "TUD-Stadtmitte", "ETH-Bahnhof", "ETH-Sunnyday", "ETH-Pedcross2", "KITTI-13", "KITTI-17", "ADL-Rundle-6", "ADL-Rundle-8", "Venice-2" };
-	for (auto seq : sequences)
+	for (auto seq : sequences) {
 		TestSORT(seq, true);
+}
 	//TestSORT("PETS09-S2L1", true);
 
 	// Note: time counted here is of tracking procedure, while the running speed bottleneck is opening and parsing detectionFile.
-	cout << "Total Tracking took: " << total_time << " for " << total_frames << " frames or " << ((double)total_frames / (double)total_time) << " FPS" << endl;
+	cout << "Total Tracking took: " << total_time << " for " << total_frames << " frames or " << (static_cast<double>(total_frames) / total_time) << " FPS" << endl;
 
 	return 0;
 }
@@ -91,17 +93,19 @@ void TestSORT(string seqName, bool display)
 	// 0. randomly generate colors, only for display
 	RNG rng(0xFFFFFFFF);
 	Scalar_<int> randColor[CNUM];
-	for (int i = 0; i < CNUM; i++)
-		rng.fill(randColor[i], RNG::UNIFORM, 0, 256);
+	for (auto & i : randColor) {
+		rng.fill(i, RNG::UNIFORM, 0, 256);
+}
 
 	string imgPath = "/Data/Track/2DMOT2015/train/" + seqName + "/img1/";
 
-	if (display)
+	if (display) {
 		if (_access(imgPath.c_str(), 0) == -1)
 		{
 			cerr << "Image path not found!" << endl;
 			display = false;
 		}
+}
 
 	// 1. read detection file
 	ifstream detectionFile;
@@ -118,7 +122,10 @@ void TestSORT(string seqName, bool display)
 	istringstream ss;
 	vector<TrackingBox> detData;
 	char ch;
-	float tpx, tpy, tpw, tph;
+	float tpx;
+	float tpy;
+	float tpw;
+	float tph;
 
 	while ( getline(detectionFile, detLine) )
 	{
@@ -138,17 +145,20 @@ void TestSORT(string seqName, bool display)
 	int maxFrame = 0;
 	for (auto tb : detData) // find max frame number
 	{
-		if (maxFrame < tb.frame)
+		if (maxFrame < tb.frame) {
 			maxFrame = tb.frame;
+}
 	}
 
 	vector<vector<TrackingBox>> detFrameData;
 	vector<TrackingBox> tempVec;
 	for (int fi = 0; fi < maxFrame; fi++)
 	{
-		for (auto tb : detData)
-			if (tb.frame == fi + 1) // frame num starts from 1
+		for (auto tb : detData) {
+			if (tb.frame == fi + 1) { // frame num starts from 1
 				tempVec.push_back(tb);
+}
+}
 		detFrameData.push_back(tempVec);
 		tempVec.clear();
 	}
@@ -200,12 +210,12 @@ void TestSORT(string seqName, bool display)
 		// when they both exists, clock() can not get right result. Now I use cv::getTickCount() instead.
 		start_time = getTickCount();
 
-		if (trackers.size() == 0) // the first frame met
+		if (trackers.empty()) // the first frame met
 		{
 			// initialize kalman trackers using first detections.
-			for (unsigned int i = 0; i < detFrameData[fi].size(); i++)
+			for (auto & i : detFrameData[fi])
 			{
-				KalmanTracker trk = KalmanTracker(detFrameData[fi][i].box);
+				KalmanTracker trk = KalmanTracker(i.box);
 				trackers.push_back(trk);
 			}
 			// output the first frame detections
@@ -268,11 +278,13 @@ void TestSORT(string seqName, bool display)
 
 		if (detNum > trkNum) //	there are unmatched detections
 		{
-			for (unsigned int n = 0; n < detNum; n++)
+			for (unsigned int n = 0; n < detNum; n++) {
 				allItems.insert(n);
+}
 
-			for (unsigned int i = 0; i < trkNum; ++i)
+			for (unsigned int i = 0; i < trkNum; ++i) {
 				matchedItems.insert(assignment[i]);
+}
 
 			set_difference(allItems.begin(), allItems.end(),
 				matchedItems.begin(), matchedItems.end(),
@@ -280,26 +292,31 @@ void TestSORT(string seqName, bool display)
 		}
 		else if (detNum < trkNum) // there are unmatched trajectory/predictions
 		{
-			for (unsigned int i = 0; i < trkNum; ++i)
-				if (assignment[i] == -1) // unassigned label will be set as -1 in the assignment algorithm
+			for (unsigned int i = 0; i < trkNum; ++i) {
+				if (assignment[i] == -1) { // unassigned label will be set as -1 in the assignment algorithm
 					unmatchedTrajectories.insert(i);
+}
+}
 		}
-		else
+		else {
 			;
+}
 
 		// filter out matched with low IOU
 		matchedPairs.clear();
 		for (unsigned int i = 0; i < trkNum; ++i)
 		{
-			if (assignment[i] == -1) // pass over invalid values
+			if (assignment[i] == -1) { // pass over invalid values
 				continue;
+}
 			if (1 - iouMatrix[i][assignment[i]] < iouThreshold)
 			{
 				unmatchedTrajectories.insert(i);
 				unmatchedDetections.insert(assignment[i]);
 			}
-			else
-				matchedPairs.push_back(cv::Point(i, assignment[i]));
+			else {
+				matchedPairs.emplace_back(i, assignment[i]);
+}
 		}
 
 		///////////////////////////////////////
@@ -307,11 +324,12 @@ void TestSORT(string seqName, bool display)
 
 		// update matched trackers with assigned detections.
 		// each prediction is corresponding to a tracker
-		int detIdx, trkIdx;
-		for (unsigned int i = 0; i < matchedPairs.size(); i++)
+		int detIdx;
+		int trkIdx;
+		for (auto & matchedPair : matchedPairs)
 		{
-			trkIdx = matchedPairs[i].x;
-			detIdx = matchedPairs[i].y;
+			trkIdx = matchedPair.x;
+			detIdx = matchedPair.y;
 			trackers[trkIdx].update(detFrameData[fi][detIdx].box);
 		}
 
@@ -336,30 +354,35 @@ void TestSORT(string seqName, bool display)
 				frameTrackingResult.push_back(res);
 				it++;
 			}
-			else
+			else {
 				it++;
+}
 
 			// remove dead tracklet
-			if (it != trackers.end() && (*it).m_time_since_update > max_age)
+			if (it != trackers.end() && (*it).m_time_since_update > max_age) {
 				it = trackers.erase(it);
+}
 		}
 
-		cycle_time = (double)(getTickCount() - start_time);
+		cycle_time = static_cast<double>(getTickCount() - start_time);
 		total_time += cycle_time / getTickFrequency();
 
-		for (auto tb : frameTrackingResult)
+		for (auto tb : frameTrackingResult) {
 			resultsFile << tb.frame << "," << tb.id << "," << tb.box.x << "," << tb.box.y << "," << tb.box.width << "," << tb.box.height << ",1,-1,-1,-1" << endl;
+}
 
 		if (display) // read image, draw results and show them
 		{
 			ostringstream oss;
 			oss << imgPath << setw(6) << setfill('0') << fi + 1;
 			Mat img = imread(oss.str() + ".jpg");
-			if (img.empty())
+			if (img.empty()) {
 				continue;
+}
 			
-			for (auto tb : frameTrackingResult)
+			for (auto tb : frameTrackingResult) {
 				cv::rectangle(img, tb.box, randColor[tb.id % CNUM], 2, 8, 0);
+}
 			imshow(seqName, img);
 			cvWaitKey(40);
 		}
@@ -367,6 +390,7 @@ void TestSORT(string seqName, bool display)
 
 	resultsFile.close();
 
-	if (display)
+	if (display) {
 		destroyAllWindows();
+}
 }

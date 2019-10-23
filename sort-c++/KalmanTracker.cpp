@@ -45,8 +45,9 @@ StateType KalmanTracker::predict()
 	Mat p = kf.predict();
 	m_age += 1;
 
-	if (m_time_since_update > 0)
+	if (m_time_since_update > 0) {
 		m_hit_streak = 0;
+}
 	m_time_since_update += 1;
 
 	StateType predictBox = get_rect_xysr(p.at<float>(0, 0), p.at<float>(1, 0), p.at<float>(2, 0), p.at<float>(3, 0));
@@ -91,10 +92,12 @@ StateType KalmanTracker::get_rect_xysr(float cx, float cy, float s, float r)
 	float x = (cx - w / 2);
 	float y = (cy - h / 2);
 
-	if (x < 0 && cx > 0)
+	if (x < 0 && cx > 0) {
 		x = 0;
-	if (y < 0 && cy > 0)
+}
+	if (y < 0 && cy > 0) {
 		y = 0;
+}
 
 	return StateType(x, y, w, h);
 }
