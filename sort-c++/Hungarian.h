@@ -23,9 +23,9 @@ public:
 	double Solve(vector<vector<double>>& DistMatrix, vector<int>& Assignment);
 
 private:
-	void assignmentoptimal(int *assignment, double *cost, double *distMatrix, int nOfRows, int nOfColumns);
+	void assignmentoptimal(std::vector<int>& assignment, double *cost, std::vector<double>& distMatrix, int nOfRows, int nOfColumns);
 	void buildassignmentvector(int *assignment, const bool *starMatrix, int nOfRows, int nOfColumns);
-	void computeassignmentcost(const int *assignment, double *cost, const double *distMatrix, int nOfRows);
+	void computeassignmentcost(const std::vector<int>& assignment, double *cost, const std::vector<double>& distMatrix, int nOfRows);
 	void step2a(int *assignment, double *distMatrix, bool *starMatrix, bool *newStarMatrix, bool *primeMatrix, bool *coveredColumns, bool *coveredRows, int nOfRows, int nOfColumns, int minDim);
 	void step2b(int *assignment, double *distMatrix, bool *starMatrix, bool *newStarMatrix, bool *primeMatrix, bool *coveredColumns, bool *coveredRows, int nOfRows, int nOfColumns, int minDim);
 	void step3(int *assignment, double *distMatrix, bool *starMatrix, bool *newStarMatrix, bool *primeMatrix, bool *coveredColumns, bool *coveredRows, int nOfRows, int nOfColumns, int minDim);
