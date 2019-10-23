@@ -115,7 +115,6 @@ void TestSORT(string seqName, bool display)
 
         ss >> tb.frame >> ch >> tb.id >> ch;
         ss >> tpx >> ch >> tpy >> ch >> tpw >> ch >> tph;
-        ss.str("");
 
         tb.box = Rect_<float>(Point_<float>(tpx, tpy), Point_<float>(tpx + tpw, tpy + tph));
         detData.push_back(tb);
@@ -146,7 +145,7 @@ void TestSORT(string seqName, bool display)
 
     // 3. update across frames
     int frame_count = 0;
-    int max_age = 1;
+    const int max_age = 1;
     int min_hits = 3;
     double iouThreshold = 0.3;
     vector<KalmanTracker> trackers;
@@ -214,7 +213,7 @@ void TestSORT(string seqName, bool display)
 
         for (auto it = trackers.begin(); it != trackers.end();)
         {
-            Rect_<float> pBox = (*it).predict();
+            Rect_<float> pBox = it->predict();
             if (pBox.x >= 0 && pBox.y >= 0)
             {
                 predictedBoxes.push_back(pBox);
@@ -322,23 +321,23 @@ void TestSORT(string seqName, bool display)
         frameTrackingResult.clear();
         for (auto it = trackers.begin(); it != trackers.end();)
         {
-            if (((*it).m_time_since_update < 1) &&
-                ((*it).m_hit_streak >= min_hits || frame_count <= min_hits))
+            if ((it->m_time_since_update < 1) &&
+                (it->m_hit_streak >= min_hits || frame_count <= min_hits))
             {
                 TrackingBox res;
-                res.box = (*it).get_state();
-                res.id = (*it).m_id + 1;
+                res.box = it->get_state();
+                res.id = it->m_id + 1;
                 res.frame = frame_count;
                 frameTrackingResult.push_back(res);
                 it++;
             }
-            else {
-                it++;
-            }
 
             // remove dead tracklet
-            if (it != trackers.end() && (*it).m_time_since_update > max_age) {
+            else if (it->m_time_since_update > max_age) {
                 it = trackers.erase(it);
+            }
+            else {
+                it++;
             }
         }
 
